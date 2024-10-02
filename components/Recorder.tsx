@@ -93,7 +93,7 @@ function Recorder({ uploadAudio }: { uploadAudio: (blob: Blob) => void }) {
           width={350}
           height={350}
           onClick={stopRecording}
-          onTouchStart={startRecording}
+          onTouchStart={stopRecording}
           priority={true}
           className="assistant grayscale"
         />
@@ -106,7 +106,6 @@ function Recorder({ uploadAudio }: { uploadAudio: (blob: Blob) => void }) {
           width={350}
           height={350}
           onClick={startRecording}
-          onTouchStart={startRecording}
           priority={true}
           className="assistant cursor-pointer hover:scale-110 duration-150 transition-all ease-in-out"
         />
