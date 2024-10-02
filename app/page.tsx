@@ -81,7 +81,6 @@ export default function Home() {
     formAction(formData);
   };
 
-  console.log(messages);
 
   return (
     <main className="bg-black h-screen overflow-y-scroll">
