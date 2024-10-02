@@ -17,7 +17,7 @@ function Recorder({ uploadAudio }: { uploadAudio: (blob: Blob) => void }) {
   const [recordingStatus, setRecordingStatus] = useState("inactive");
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const [audio, setAudio] = useState<string | null>(null);
-  const [isRecording, setIsRecording] = useState(true);
+  const [isRecording, setIsRecording] = useState(false);
 
   useEffect(() => {
     getMicrophonePermission();
