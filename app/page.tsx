@@ -95,7 +95,7 @@ export default function Home() {
             height={45}
             className="h-12 mr-1"
           />
-          <span className="text-2xl font-[900] font-serif">Julie ♥</span>
+          <span className="text-2xl font-[900] font-serif">Julie ♡</span>
         </div>
 
           <BeatLoader color="#ffffff" loading={loading} />
