@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import activeAssistantIcon from "@/img/active.gif";
 import notActiveAssistantIcon from "@/img/notactive.png";
 import { useFormStatus } from "react-dom";
-import {Button} from "@/components/ui/button";
 
 const mimeType = "audio/webm";
 
@@ -17,7 +16,6 @@ function Recorder({ uploadAudio }: { uploadAudio: (blob: Blob) => void }) {
   const [recordingStatus, setRecordingStatus] = useState("inactive");
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const [audio, setAudio] = useState<string | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
 
   useEffect(() => {
     getMicrophonePermission();
@@ -41,7 +39,6 @@ function Recorder({ uploadAudio }: { uploadAudio: (blob: Blob) => void }) {
   };
 
   const startRecording = async () => {
-    setIsRecording(true);
     if (mediaRecorder === null || stream === null) return;
 
     if (pending) return;
@@ -63,7 +60,6 @@ function Recorder({ uploadAudio }: { uploadAudio: (blob: Blob) => void }) {
   };
 
   const stopRecording = () => {
-    setIsRecording(false);
     if (mediaRecorder.current === null) return;
 
     if (pending) return;
@@ -124,11 +120,6 @@ function Recorder({ uploadAudio }: { uploadAudio: (blob: Blob) => void }) {
           className="assistant cursor-pointer hover:scale-110 duration-150 transition-all ease-in-out"
         />
       ) : null}
-      {
-        isRecording && (
-          <Button onClick={stopRecording}>Stop Rec</Button>
-        )
-      }
     </div>
   );
 }
