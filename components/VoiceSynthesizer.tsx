@@ -104,7 +104,7 @@ function VoiceSynthesizer({
             </select>
           </div>
 
-          <div className="flex pb-5">
+          <div className="flex flex-col sm:flex-row pb-5">
             <div className="p-2">
               <p className="text-xs text-gray-500">Stability:</p>
               <input
