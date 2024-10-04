@@ -1,16 +1,14 @@
 "use client";
 
 import { ChangeEvent, useEffect, useState } from "react";
+import { createClient } from "@deepgram/sdk"; // Import Deepgram SDK
 
 type State = {
   sender: string;
   response: string | null | undefined;
 };
 
-type VoiceSettings = {
-  stability: number;
-  similarityBoost: number;
-};
+const deepgram = createClient(process.env.NEXT_PUBLIC_DEEPGRAM_API_KEY); // Initialize Deepgram client
 
 function VoiceSynthesizer({
   state,
@@ -19,70 +17,72 @@ function VoiceSynthesizer({
   state: State;
   displaySettings: boolean;
 }) {
-  const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>({
-    stability: 0.5,
-    similarityBoost: 0.5,
-  });
+  const [synth, setSynth] = useState<SpeechSynthesis | null>(null);
+  const [voice, setVoice] = useState<SpeechSynthesisVoice | null>(null);
+  const [pitch, setPitch] = useState(1);
+  const [rate, setRate] = useState(1);
   const [volume, setVolume] = useState(1);
-  const [voiceId, setVoiceId] = useState<string>("cgSgspJ2msm6clMCkdW9"); // Default voice ID
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setSynth(window.speechSynthesis);
+    }
+  }, [window]);
 
   const getAudio = async (text: string) => {
-    const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
-    
+    const url = "https://api.deepgram.com/v1/speak?model=aura-luna-en";
+    const data = JSON.stringify({ text });
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Accept': 'audio/mpeg',
+        'Authorization': `Token ${process.env.NEXT_PUBLIC_DEEPGRAM_API_KEY}`,
         'Content-Type': 'application/json',
-        'xi-api-key': process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY || '',
       },
-      body: JSON.stringify({
-        text,
-        model_id: "eleven_turbo_v2_5",
-        voice_settings: {
-          stability: voiceSettings.stability,
-          similarity_boost: voiceSettings.similarityBoost,
-          language_code: "hi",
-        }
-      }),
+      body: data,
     });
 
+    // Check if the response is OK
     if (!response.ok) {
       console.error("Error fetching audio:", response.statusText);
       return;
     }
 
     const audioBlob = await response.blob();
-    const audio = new Audio(URL.createObjectURL(audioBlob));
-    audio.volume = volume;
+    const urlBlob = URL.createObjectURL(audioBlob);
+    const audio = new Audio(urlBlob);
     audio.play();
   };
 
   useEffect(() => {
     if (!state.response) return;
+
+    // Call the getAudio function instead of using the SpeechSynthesis API
     getAudio(state.response);
   }, [state]);
 
-  const handleStabilityChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setVoiceSettings(prev => ({
-      ...prev,
-      stability: parseFloat(e.target.value)
-    }));
+  useEffect(() => {
+    const voices = window.speechSynthesis.getVoices();
+    setVoice(voices[0]);
+  }, [window]);
+
+  const handleVoiceChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    const voices = window.speechSynthesis.getVoices();
+    const voice = voices.find((v) => v.name === e.target.value);
+    if (!voice) return;
+    setVoice(voice);
   };
 
-  const handleSimilarityBoostChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setVoiceSettings(prev => ({
-      ...prev,
-      similarityBoost: parseFloat(e.target.value)
-    }));
+  const handlePitchChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setPitch(parseFloat(e.target.value));
+  };
+
+  const handleRateChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setRate(parseFloat(e.target.value));
   };
 
   const handleVolumeChange = (e: ChangeEvent<HTMLInputElement>) => {
     setVolume(parseFloat(e.target.value));
-  };
-
-  const handleVoiceChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    setVoiceId(e.target.value);
   };
 
   return (
@@ -92,41 +92,41 @@ function VoiceSynthesizer({
           <div className="w-fit">
             <p className="text-xs text-gray-500 p-2">Voice:</p>
             <select
-              defaultValue={voiceId}
-              value={voiceId}
+              value={voice?.name}
               onChange={handleVoiceChange}
-              className="flex-1 bg-purple-500 text-white border border-gray-300 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:focus:ring-purple-500 dark:focus:border-purple-500"
+              className="flex-1 bg-purple-500 text-white border border-gray-300 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400  dark:focus:ring-purple-500 dark:focus:border-purple-500"
             >
-              <option value="vghiSqG5ezdhd8F3tKAD">Saira</option>
-              <option value="mActWQg9kibLro6Z2ouY">Riya</option>
-              <option value="cgSgspJ2msm6clMCkdW9">Jessica</option>
-              <option value="EXAVITQu4vr4xnSDxMaL">Sarah</option>
+              {window.speechSynthesis.getVoices().map((voice) => (
+                <option key={voice.name} value={voice.name}>
+                  {voice.name}
+                </option>
+              ))}
             </select>
           </div>
 
-          <div className="flex flex-col sm:flex-row pb-5">
+          <div className="flex pb-5">
             <div className="p-2">
-              <p className="text-xs text-gray-500">Stability:</p>
+              <p className="text-xs text-gray-500">Pitch:</p>
               <input
                 type="range"
-                min="0"
-                max="1"
+                min="0.5"
+                max="2"
                 step="0.1"
-                value={voiceSettings.stability}
-                onChange={handleStabilityChange}
+                value={pitch}
+                onChange={handlePitchChange}
                 className="accent-purple-500"
               />
             </div>
 
             <div className="p-2">
-              <p className="text-xs text-gray-500">Similarity Boost:</p>
+              <p className="text-xs text-gray-500">Speed:</p>
               <input
                 type="range"
-                min="0"
-                max="1"
+                min="0.5"
+                max="2"
                 step="0.1"
-                value={voiceSettings.similarityBoost}
-                onChange={handleSimilarityBoostChange}
+                value={rate}
+                onChange={handleRateChange}
                 className="accent-purple-500"
               />
             </div>
@@ -146,9 +146,9 @@ function VoiceSynthesizer({
           </div>
         </>
       )}
-      <div className="text-zinc-600 text-sm -mt-3 mb-1"><a target="_blank" href="https://github.com/debsouryadatta">Created by @debsouryadatta</a></div>
     </div>
   );
 }
+
 
 export default VoiceSynthesizer;
