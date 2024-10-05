@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { createClient } from "@deepgram/sdk"; // Import Deepgram SDK
 
 type State = {
@@ -12,25 +12,19 @@ const deepgram = createClient(process.env.NEXT_PUBLIC_DEEPGRAM_API_KEY); // Init
 
 function VoiceSynthesizer({
   state,
-  displaySettings,
+  displaySettings, recordingStatus, setRecordingStatus
 }: {
   state: State;
   displaySettings: boolean;
+  recordingStatus: string;
+  setRecordingStatus: (status: string) => void;
 }) {
-  const [synth, setSynth] = useState<SpeechSynthesis | null>(null);
-  const [voice, setVoice] = useState<SpeechSynthesisVoice | null>(null);
-  const [pitch, setPitch] = useState(1);
-  const [rate, setRate] = useState(1);
-  const [volume, setVolume] = useState(1);
+  const [voiceId, setVoiceId] = useState<string>("aura-luna-en"); // Default voice ID
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setSynth(window.speechSynthesis);
-    }
-  }, [window]);
 
   const getAudio = async (text: string) => {
-    const url = "https://api.deepgram.com/v1/speak?model=aura-luna-en";
+    const url = `https://api.deepgram.com/v1/speak?model=${voiceId}`;
     const data = JSON.stringify({ text });
 
     const response = await fetch(url, {
@@ -50,8 +44,8 @@ function VoiceSynthesizer({
 
     const audioBlob = await response.blob();
     const urlBlob = URL.createObjectURL(audioBlob);
-    const audio = new Audio(urlBlob);
-    audio.play();
+    audioRef.current = new Audio(urlBlob);
+    audioRef.current.play();
   };
 
   useEffect(() => {
@@ -62,87 +56,38 @@ function VoiceSynthesizer({
   }, [state]);
 
   useEffect(() => {
-    const voices = window.speechSynthesis.getVoices();
-    setVoice(voices[0]);
-  }, [window]);
+    console.log("Recording Status from Voice Synthesizer:", recordingStatus);
+    
+    if (recordingStatus === "recording" && audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+  }, [recordingStatus]);
+  
 
   const handleVoiceChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const voices = window.speechSynthesis.getVoices();
-    const voice = voices.find((v) => v.name === e.target.value);
-    if (!voice) return;
-    setVoice(voice);
-  };
-
-  const handlePitchChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setPitch(parseFloat(e.target.value));
-  };
-
-  const handleRateChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setRate(parseFloat(e.target.value));
-  };
-
-  const handleVolumeChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setVolume(parseFloat(e.target.value));
+    setVoiceId(e.target.value);
   };
 
   return (
     <div className="flex flex-col items-center justify-center text-white">
       {displaySettings && (
         <>
-          <div className="w-fit">
+          <div className="w-fit mb-10">
             <p className="text-xs text-gray-500 p-2">Voice:</p>
             <select
-              value={voice?.name}
+              defaultValue={voiceId}
+              value={voiceId}
               onChange={handleVoiceChange}
-              className="flex-1 bg-purple-500 text-white border border-gray-300 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400  dark:focus:ring-purple-500 dark:focus:border-purple-500"
+              className="flex-1 bg-purple-500 text-white border border-gray-300 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:focus:ring-purple-500 dark:focus:border-purple-500"
             >
-              {window.speechSynthesis.getVoices().map((voice) => (
-                <option key={voice.name} value={voice.name}>
-                  {voice.name}
-                </option>
-              ))}
+              <option value="aura-asteria-en">Asteria</option>
+              <option value="aura-luna-en">Luna</option>
+              <option value="aura-stella-en">Stella</option>
+              <option value="aura-athena-en">Athena</option>
+              <option value="aura-hera-en">Hera</option>
+              <option value="aura-perseus-en">Perseus</option>
             </select>
-          </div>
-
-          <div className="flex pb-5">
-            <div className="p-2">
-              <p className="text-xs text-gray-500">Pitch:</p>
-              <input
-                type="range"
-                min="0.5"
-                max="2"
-                step="0.1"
-                value={pitch}
-                onChange={handlePitchChange}
-                className="accent-purple-500"
-              />
-            </div>
-
-            <div className="p-2">
-              <p className="text-xs text-gray-500">Speed:</p>
-              <input
-                type="range"
-                min="0.5"
-                max="2"
-                step="0.1"
-                value={rate}
-                onChange={handleRateChange}
-                className="accent-purple-500"
-              />
-            </div>
-
-            <div className="p-2">
-              <p className="text-xs text-gray-500">Volume:</p>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={volume}
-                onChange={handleVolumeChange}
-                className="accent-purple-500"
-              />
-            </div>
           </div>
         </>
       )}

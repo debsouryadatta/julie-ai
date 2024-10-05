@@ -29,6 +29,7 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [displaySettings, setDisplaySettings] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [recordingStatus, setRecordingStatus] = useState("inactive");
 
   // Responsible for updating the messages when the Server Action completes
   useEffect(() => {
@@ -115,9 +116,9 @@ export default function Home() {
         <button type="submit" hidden ref={submitButtonRef} />
 
         <div className="fixed bottom-0 w-full overflow-hidden bg-black rounded-t-3xl">
-          <Recorder uploadAudio={uploadAudio} />
+          <Recorder uploadAudio={uploadAudio} recordingStatus={recordingStatus} setRecordingStatus={setRecordingStatus} />
           <div className="">
-            <VoiceSynthesizer state={state} displaySettings={displaySettings} />
+            <VoiceSynthesizer state={state} displaySettings={displaySettings} recordingStatus={recordingStatus} setRecordingStatus={setRecordingStatus} />
           </div>
         </div>
       </form>

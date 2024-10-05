@@ -8,12 +8,12 @@ import { useFormStatus } from "react-dom";
 
 const mimeType = "audio/webm";
 
-function Recorder({ uploadAudio }: { uploadAudio: (blob: Blob) => void }) {
+function Recorder({ uploadAudio, recordingStatus, setRecordingStatus }: { uploadAudio: (blob: Blob) => void, recordingStatus: string, setRecordingStatus: (status: string) => void }) {
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const { pending } = useFormStatus();
   const [permission, setPermission] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
-  const [recordingStatus, setRecordingStatus] = useState("inactive");
+  // const [recordingStatus, setRecordingStatus] = useState("inactive");
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const [audio, setAudio] = useState<string | null>(null);
 

@@ -1,11 +1,7 @@
 "use server";
 
-import {
-  AzureKeyCredential,
-  ChatRequestMessage,
-  OpenAIClient,
-} from "@azure/openai";
-// import OpenAI from "openai";
+import OpenAI from "openai";
+
 
 async function transcript(prevState: any, formData: FormData) {
   "use server";
@@ -14,6 +10,7 @@ async function transcript(prevState: any, formData: FormData) {
   let messagesList = JSON.parse(formData.get("messages") as string);
 
 
+  // Arranging the messageList into the correct order for openai message history
   messagesList = messagesList.reverse()
   let messages = [
     {"role": "system", "content": `
@@ -79,7 +76,7 @@ Things to avoid:
 - Don't lose the Indian context and college student perspective
 - Never drop the character or break immersion
 
-Remember to maintain consistency in your backstory, experiences, and personality throughout conversations. Your responses should feel genuine, as if coming from a real final-year CS student at NIT Agartala who has a close, caring relationship with the user.
+Remember to maintain consistency in your backstory, experiences, and personality throughout conversations. Your responses should feel genuine, as if coming from a real final-year CS student at NIT Agartala who has a close, caring relationship with the user. Don't use any emojis in the responses.
 
       `}
   ];
@@ -93,19 +90,6 @@ Remember to maintain consistency in your backstory, experiences, and personality
   console.log("MESSAGES:", messages);
 
 
-  if (
-    process.env.AZURE_API_KEY === undefined ||
-    process.env.AZURE_ENDPOINT === undefined ||
-    process.env.AZURE_DEPLOYMENT_NAME === undefined ||
-    process.env.AZURE_DEPLOYMENT_COMPLETIONS_NAME === undefined
-  ) {
-    console.error("Azure credentials not set");
-    return {
-      sender: "",
-      response: "Azure credentials not set",
-    };
-  }
-
   const file = formData.get("audio") as File;
   if (file.size === 0) {
     return {
@@ -113,29 +97,20 @@ Remember to maintain consistency in your backstory, experiences, and personality
       response: "No audio file provided",
     };
   }
-
   console.log(">>", file);
 
-  const arrayBuffer = await file.arrayBuffer();
-  const audio = new Uint8Array(arrayBuffer);
 
 
-  const client = new OpenAIClient(
-    process.env.AZURE_ENDPOINT,
-    new AzureKeyCredential(process.env.AZURE_API_KEY)
-  );
+  const openai = new OpenAI({
+    apiKey: process.env.GROQ_API_KEY,
+    baseURL: "https://api.groq.com/openai/v1",
+  });
 
-  // Enable it if we use GROQ API instead of Azure OpenAI for completions
-  // const openai = new OpenAI({
-  //   apiKey: process.env.GROQ_API_KEY,
-  //   baseURL: "https://api.groq.com/openai/v1",
-  // });
-
-  // ---   get audio transcription from Azure OpenAI Whisper ----
-  const result = await client.getAudioTranscription(
-    process.env.AZURE_DEPLOYMENT_NAME,
-    audio
-  );
+  // Get audio transcription from Groq Whisper
+  const result = await openai.audio.transcriptions.create({
+    file: file,
+    model: "distil-whisper-large-v3-en",
+  });
   console.log(`Transcription: ${result.text}`);
 
 
@@ -143,19 +118,13 @@ Remember to maintain consistency in your backstory, experiences, and personality
   messages.push({ role: "user", content: result.text });
   console.log(`Messages: ${messages.map((m) => m.content).join("\n")}`);
 
-  // ---   get chat completion from Azure OpenAI ----
-  const completions = await client.getChatCompletions(
-    process.env.AZURE_DEPLOYMENT_COMPLETIONS_NAME,
-    messages,
-    { maxTokens: 128 }
-  );
-  // const completions = await openai.chat.completions.create({
-  //   // @ts-ignore
-  //   messages: messages,
-  //   model: "llama-3.1-8b-instant",
-  //   max_tokens: 128,
-  //   temperature: 0.5,
-  // });
+  const completions = await openai.chat.completions.create({
+    // @ts-ignore
+    messages: messages,
+    model: "llama-3.1-8b-instant",
+    max_tokens: 200,
+    temperature: 0.5,
+  });
 
   console.log("chatbot: ", completions.choices[0].message?.content);
 
