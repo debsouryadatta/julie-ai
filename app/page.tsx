@@ -9,6 +9,7 @@ import Messages from "@/components/Messages";
 import { SettingsIcon } from "lucide-react";
 import Image from "next/image";
 import { BeatLoader } from "react-spinners";
+import { aiGfPrompt } from "@/lib/prompt";
 
 const initialState = {
   sender: "",
@@ -34,6 +35,14 @@ export default function Home() {
   // Responsible for updating the messages when the Server Action completes
   useEffect(() => {
     if (state.response && state.sender) {
+      localStorage.setItem("messages", JSON.stringify([
+        {
+          sender: state.sender || "",
+          response: state.response || "",
+          id: state.id || "",
+        },
+        ...messages,
+      ]));
       setMessages((messages) => [
         {
           sender: state.sender || "",
@@ -45,6 +54,14 @@ export default function Home() {
       setLoading(false);
     }
   }, [state]);
+
+  useEffect(()=> {
+    let messages = JSON.parse(localStorage.getItem("messages") as string);
+    if(messages){
+      const last20Messages = messages.slice(-20);
+      setMessages(last20Messages);
+    }
+  }, []);
 
   const uploadAudio = (blob: Blob) => {
     const url = URL.createObjectURL(blob);
@@ -77,7 +94,11 @@ export default function Home() {
     if (fileRef.current && fileRef.current.files) {
       formData.append("audio", fileRef.current.files[0]);
     }
-    formData.append("messages", JSON.stringify(messages));
+    formData.append("messages", JSON.stringify([...messages, {
+      sender: "",
+      response: aiGfPrompt,
+      id: "",
+    }]));
 
     formAction(formData);
   };
