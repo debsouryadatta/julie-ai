@@ -68,12 +68,21 @@ Julie AI is a unique voice-based AI assistant that combines technical knowledge 
 - [Next.js](https://nextjs.org/) - React Framework
 - [Tailwind CSS](https://tailwindcss.com) - Styling
 - [Shadcn UI](https://ui.shadcn.com/) - UI Components
-- [GROQ API](https://groq.com/) - AI Language Model
-- [ElevenLabs](https://elevenlabs.io/) - Voice Synthesis
+- [GROQ API](https://groq.com/) - AI Language Model + Text-to-Speech
+- [ElevenLabs](https://elevenlabs.io/) - Voice Synthesis/Speech-to-Text
 - [React](https://reactjs.org/) - Frontend Library
 - [TypeScript](https://www.typescriptlang.org/) - Programming Language
+- [Spline](https://splinetool.com/) - 3D Interactive Scene
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Basic Workflow
+<div>
+    <img style="width: 50%" src="https://res.cloudinary.com/diyxwdtjd/image/upload/v1733168224/projects/Screenshot_2024-12-03_at_1.04.47_AM_abt50c.png" alt="Julie AI">
+</div>
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -139,3 +148,6 @@ Debsourya Datta - [@debsouryadatta](https://twitter.com/debsouryadatta) - debsou
 Project Link: [https://github.com/debsouryadatta/julie-ai](https://github.com/debsouryadatta/julie-ai)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+`pnpm add @splinetool/react-spline`

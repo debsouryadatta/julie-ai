@@ -1,4 +1,4 @@
-import { Message } from "@/app/page";
+import { Message } from "@/app/julie/page";
 import SubmitButton from "./SubmitButton";
 import { ChevronDownCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -8,49 +8,7 @@ interface Props {
 }
 
 function Messages({ messages }: Props) {
-  // const DummyMessages = [
-  //   {
-  //     sender: "Hello",
-  //     response:
-  //       "Once upon a time, in a small village nestled at the foot of a mighty mountain, there lived a young girl named Lily. Lily was known for her adventurous spirit and endless curiosity. One day, as she was exploring the dense forest that surrounded her village, she stumbled upon a hidden path she had never seen before. Intrigued, Lily decided to follow the path and see where it led. As she walked deeper into the forest, the sounds of chirping birds and rustling leaves filled the air around her. After a while, she found herself in a meadow bathed in golden sunlight. In the center of the me",
-  //     id: "1",
-  //   },
-  //   {
-  //     sender:
-  //       "Once upon a time, in a small village nestled at the foot of a mighty mountain, there lived a young girl named Lily. Lily was known for her adventurous spirit and endless curiosity. One day, as she was exploring the dense forest that surrounded her village, she stumbled upon a hidden path she had never seen before. Intrigued, Lily decided to follow the path and see where it led. As she walked deeper into the forest, the sounds of chirping birds and rustling leaves filled the air around her. After a while, she found herself in a meadow bathed in golden sunlight. In the center of the me",
-  //     response: "I'm good",
-  //     id: "2",
-  //   },
-  //   {
-  //     sender: "What's your name?",
-  //     response: "I'm a bot",
-  //     id: "3",
-  //   },
-  //   {
-  //     sender: "Hello",
-  //     response:
-  //       "Once upon a time, in a small village nestled at the foot of a mighty mountain, there lived a young",
-  //     id: 4,
-  //   },
-  //   {
-  //     sender: "Hello",
-  //     response:
-  //       "Once upon a time, in a small village nestled at the foot of a mighty mountain, there lived a young",
-  //     id: 4,
-  //   },
-  //   {
-  //     sender: "Hello",
-  //     response:
-  //       "Once upon a time, in a small village nestled at the foot of a mighty mountain, there lived a young",
-  //     id: 4,
-  //   },
-  //   {
-  //     sender: "Hello",
-  //     response:
-  //       "Once upon a time, in a small village nestled at the foot of a mighty mountain, there lived a young",
-  //     id: 4,
-  //   },
-  // ];
+
   return (
     <div
       className={`flex flex-col min-h-screen p- pt-20 ${
