@@ -56,12 +56,11 @@ Julie AI is a unique voice-based AI assistant that combines technical knowledge 
 
 - 🎙️ **Voice Interaction**: Seamless voice-based conversations using browser's audio API
 - 🗣️ **Natural Voice Synthesis**: Realistic voice output using ElevenLabs API
-- 💬 **Hinglish Support**: Natural mixing of Hindi and English in conversations
 - 🧠 **Advanced AI**: Powered by GROQ API for intelligent responses
 - 🎨 **Modern UI**: Beautiful, responsive interface with dark mode
+- 🌟 **3D Interactive Scene**: Interactive scene with Spline
 - ⚡ **Real-time Processing**: Fast, efficient audio processing and response generation
 - 🔊 **Voice Customization**: Adjustable voice settings including stability and similarity boost
-- 🔐 **API Key Management**: Secure storage and management of API keys
 
 ### Built With
 
