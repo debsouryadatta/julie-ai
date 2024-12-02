@@ -5,15 +5,15 @@ import { useEffect, useRef, useState } from "react";
 import activeAssistantIcon from "@/img/active.gif";
 import notActiveAssistantIcon from "@/img/notactive.png";
 import { useFormStatus } from "react-dom";
+import { toast } from "sonner";
 
 const mimeType = "audio/webm";
 
-function Recorder({ uploadAudio }: { uploadAudio: (blob: Blob) => void }) {
+function Recorder({ uploadAudio, recordingStatus, setRecordingStatus, groqKey, elevenLabsKey }: { uploadAudio: (blob: Blob) => void, recordingStatus: string, setRecordingStatus: (status: string) => void, groqKey: string, elevenLabsKey: string }) {
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const { pending } = useFormStatus();
   const [permission, setPermission] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
-  const [recordingStatus, setRecordingStatus] = useState("inactive");
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const [audio, setAudio] = useState<string | null>(null);
 
@@ -31,15 +31,19 @@ function Recorder({ uploadAudio }: { uploadAudio: (blob: Blob) => void }) {
         setPermission(true);
         setStream(streamData);
       } catch (err: any) {
-        alert(err.message);
+        toast.error(err.message);
       }
     } else {
-      alert("The MediaRecorder API is not supported in your browser.");
+      toast.error("The MediaRecorder API is not supported in your browser.");
     }
   };
 
   const startRecording = async () => {
     if (mediaRecorder === null || stream === null) return;
+    if (!groqKey || !elevenLabsKey) {
+      toast.error("Please enter your API keys first.");
+      return;
+    }
 
     if (pending) return;
 

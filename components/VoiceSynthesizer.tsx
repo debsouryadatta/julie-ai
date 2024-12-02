@@ -1,6 +1,8 @@
 "use client";
 
-import { ChangeEvent, useEffect, useState } from "react";
+import { Github } from "lucide-react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 type State = {
   sender: string;
@@ -15,53 +17,80 @@ type VoiceSettings = {
 function VoiceSynthesizer({
   state,
   displaySettings,
+  recordingStatus,
+  setRecordingStatus,
+  elevenLabsKey
 }: {
   state: State;
   displaySettings: boolean;
+  recordingStatus: string;
+  setRecordingStatus: (status: string) => void;
+  elevenLabsKey: string;
 }) {
   const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>({
-    stability: 0.5,
-    similarityBoost: 0.5,
+    stability: 0.75,
+    similarityBoost: 0.85,
   });
   const [volume, setVolume] = useState(1);
   const [voiceId, setVoiceId] = useState<string>("cgSgspJ2msm6clMCkdW9"); // Default voice ID
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const getAudio = async (text: string) => {
-    const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
-    
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Accept': 'audio/mpeg',
-        'Content-Type': 'application/json',
-        'xi-api-key': process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY || '',
-      },
-      body: JSON.stringify({
-        text,
-        model_id: "eleven_turbo_v2_5",
-        voice_settings: {
-          stability: voiceSettings.stability,
-          similarity_boost: voiceSettings.similarityBoost,
-          language_code: "hi",
-        }
-      }),
-    });
+    try {
+      const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
 
-    if (!response.ok) {
-      console.error("Error fetching audio:", response.statusText);
-      return;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Accept': 'audio/mpeg',
+          'Content-Type': 'application/json',
+          'xi-api-key': elevenLabsKey || '',
+        },
+        body: JSON.stringify({
+          text,
+          model_id: "eleven_turbo_v2_5",
+          voice_settings: {
+            stability: voiceSettings.stability,
+            similarity_boost: voiceSettings.similarityBoost,
+            language_code: "hi",
+          }
+        }),
+      });
+  
+      if (!response.ok) {
+        console.error("Error fetching audio:", response.statusText);
+        toast.error("Something went wrong with ElevenLabs");
+        return;
+      }
+  
+      const audioBlob = await response.blob();
+      const urlBlob = URL.createObjectURL(audioBlob);
+      audioRef.current = new Audio(urlBlob);
+      audioRef.current.volume = volume;
+      audioRef.current.play();
+    } catch (error) {
+      console.log("Error fetching audio from ElevenLabs:", error);
+      toast.error("Something went wrong");
     }
-
-    const audioBlob = await response.blob();
-    const audio = new Audio(URL.createObjectURL(audioBlob));
-    audio.volume = volume;
-    audio.play();
   };
 
+
+  // Play the audio when the response changes i.e when the text is generated
   useEffect(() => {
     if (!state.response) return;
     getAudio(state.response);
   }, [state]);
+
+
+  // Pause the audio when the recording status changes
+  useEffect(() => {
+    console.log("Recording Status from Voice Synthesizer:", recordingStatus);
+
+    if (recordingStatus === "recording" && audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+  }, [recordingStatus]);
 
   const handleStabilityChange = (e: ChangeEvent<HTMLInputElement>) => {
     setVoiceSettings(prev => ({
@@ -146,7 +175,11 @@ function VoiceSynthesizer({
           </div>
         </>
       )}
-      <div className="text-zinc-600 text-sm -mt-3 mb-1"><a target="_blank" href="https://github.com/debsouryadatta">Created by @debsouryadatta</a></div>
+      <div className="text-zinc-600 text-sm -mt-3 mb-1"><a className="flex" target="_blank" href="https://github.com/debsouryadatta">
+        <span className="font-bold mr-2">Created by</span>
+        <span className="font-bold"><Github className="w-5 -mt-[2px]" /></span>
+        <span className="font-bold">@debsouryadatta</span>
+      </a></div>
     </div>
   );
 }

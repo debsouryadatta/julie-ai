@@ -6,9 +6,12 @@ import { useEffect, useRef, useState } from "react";
 import Recorder from "@/components/Recorder";
 import VoiceSynthesizer from "@/components/VoiceSynthesizer";
 import Messages from "@/components/Messages";
-import { SettingsIcon } from "lucide-react";
+import { Settings2, SettingsIcon } from "lucide-react";
 import Image from "next/image";
 import { BeatLoader } from "react-spinners";
+import { AI_GF_PROMPT } from "@/lib/prompt";
+import ApiKeysDialog from "@/components/ApiKeysDialog";
+import { toast } from "sonner";
 
 const initialState = {
   sender: "",
@@ -29,10 +32,21 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [displaySettings, setDisplaySettings] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [recordingStatus, setRecordingStatus] = useState("inactive");
+  const [groqKey, setGroqKey] = useState("");
+  const [elevenLabsKey, setElevenLabsKey] = useState("");
 
   // Responsible for updating the messages when the Server Action completes
   useEffect(() => {
     if (state.response && state.sender) {
+      localStorage.setItem("messages", JSON.stringify([
+        {
+          sender: state.sender || "",
+          response: state.response || "",
+          id: state.id || "",
+        },
+        ...messages,
+      ]));
       setMessages((messages) => [
         {
           sender: state.sender || "",
@@ -44,6 +58,16 @@ export default function Home() {
       setLoading(false);
     }
   }, [state]);
+
+  useEffect(()=> {
+    let messages = JSON.parse(localStorage.getItem("messages") as string);
+    if(messages){
+      const last20Messages = messages.slice(-20);
+      setMessages(last20Messages);
+    }
+    setGroqKey(localStorage.getItem("GROQ_API_KEY") || "");
+    setElevenLabsKey(localStorage.getItem("ELEVENLABS_API_KEY") || "");
+  }, []);
 
   const uploadAudio = (blob: Blob) => {
     const url = URL.createObjectURL(blob);
@@ -72,13 +96,22 @@ export default function Home() {
   const handleSubmit = (e:| React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
     setLoading(true);
-    const formData = new FormData();
-    if (fileRef.current && fileRef.current.files) {
-      formData.append("audio", fileRef.current.files[0]);
+    try {
+      const formData = new FormData();
+      if (fileRef.current && fileRef.current.files) {
+        formData.append("audio", fileRef.current.files[0]);
+      }
+      formData.append("messages", JSON.stringify([...messages, {
+        sender: "",
+        response: AI_GF_PROMPT,
+        id: "",
+      }]));
+      formData.append("groqKey", groqKey);
+      formAction(formData);
+    } catch (error) {
+      console.log("Error submitting form to actions file:", error);
+      toast.error("Something went wrong. Please try again.");
     }
-    formData.append("messages", JSON.stringify(messages));
-
-    formAction(formData);
   };
 
 
@@ -98,11 +131,17 @@ export default function Home() {
         </div>
 
           <BeatLoader color="#ffffff" loading={loading} />
-        <SettingsIcon
-          className="p-2 m-2 rounded-full cursor-pointer bg-indigo-500 text-black transition-all ease-in-out duration-150 hover:bg-indigo-900 hover:text-white"
-          onClick={() => setDisplaySettings(!displaySettings)}
-          size={40}
-        />
+          <div className="flex items-center">
+            <ApiKeysDialog groqKey={groqKey} elevenLabsKey={elevenLabsKey} setGroqKey={setGroqKey} setElevenLabsKey={setElevenLabsKey} />
+            <div className="p-2 m-2 rounded-full cursor-pointer bg-indigo-500 text-black transition-all ease-in-out duration-150 hover:bg-indigo-900 hover:text-white flex justify-center items-center"
+              onClick={() => setDisplaySettings(!displaySettings)}
+            >
+              <SettingsIcon
+                size={20}
+              />
+              <span className="font-bold ml-[2px] -mt-[2px]">voice</span>
+            </div>
+          </div>
       </header>
 
 
@@ -115,9 +154,9 @@ export default function Home() {
         <button type="submit" hidden ref={submitButtonRef} />
 
         <div className="fixed bottom-0 w-full overflow-hidden bg-black rounded-t-3xl">
-          <Recorder uploadAudio={uploadAudio} />
+          <Recorder uploadAudio={uploadAudio} recordingStatus={recordingStatus} setRecordingStatus={setRecordingStatus} groqKey={groqKey} elevenLabsKey={elevenLabsKey} />
           <div className="">
-            <VoiceSynthesizer state={state} displaySettings={displaySettings} />
+            <VoiceSynthesizer state={state} displaySettings={displaySettings} recordingStatus={recordingStatus} setRecordingStatus={setRecordingStatus} elevenLabsKey={elevenLabsKey} />
           </div>
         </div>
       </form>
