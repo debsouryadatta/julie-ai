@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import Spline from '@splinetool/react-spline/next';
+import SplineScene from '@/components/SplineScene';
 import { Github } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -14,10 +14,7 @@ export default function SplinePage() {
       <div className="relative h-[75vh] w-full">
         {/* Spline container */}
         <div className="w-full h-full relative">
-          <Spline
-            className="w-full h-full"
-            scene="https://prod.spline.design/fM5976-kj5XX5kdk/scene.splinecode"
-          />
+          <SplineScene />
         </div>
       </div>
 
@@ -31,7 +28,9 @@ export default function SplinePage() {
       </div>
 
       <Button className='absolute bottom-4 right-4'>
-        <a className="font-bold" href="https://github.com/debsourya/julie-ai" target="_blank" rel="noopener noreferrer"><Github className="w-5 -mt-[2px]" /></a>
+        <a className="font-bold" href="https://github.com/debsourya/julie-ai" target="_blank" rel="noopener noreferrer">
+          <Github className="w-5 -mt-[2px]" />
+        </a>
       </Button>
     </div>
   );
